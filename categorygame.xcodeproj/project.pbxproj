@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		66AB936A2DFF7D49004E3549 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 66AB93692DFF7D49004E3549 /* ConfettiSwiftUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		66AB934C2DFF7BE3004E3549 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66AB936A2DFF7D49004E3549 /* ConfettiSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = categorygame;
 			packageProductDependencies = (
+				66AB93692DFF7D49004E3549 /* ConfettiSwiftUI */,
 			);
 			productName = categorygame;
 			productReference = 66AB933B2DFF7BE2004E3549 /* categorygame.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 66AB93322DFF7BE2004E3549;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				66AB93682DFF7C67004E3549 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 66AB933C2DFF7BE2004E3549 /* Products */;
 			projectDirPath = "";
@@ -558,6 +567,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		66AB93682DFF7C67004E3549 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		66AB93692DFF7D49004E3549 /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 66AB93682DFF7C67004E3549 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 66AB93332DFF7BE2004E3549 /* Project object */;
 }
