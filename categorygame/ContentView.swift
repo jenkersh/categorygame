@@ -85,7 +85,7 @@ struct ContentView: View {
 
 
 
-    let categories = ["Animals", "Foods", "Countries", "Movies", "Jobs", "Adjectives"]
+    let categories = ["Animalss", "Foods", "Countries", "Movies", "Jobs", "Adjectives"]
     let letters = (65...90).compactMap { UnicodeScalar($0).map { String(Character($0)) } }
 
 
