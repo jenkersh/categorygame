@@ -85,7 +85,29 @@ struct ContentView: View {
 
 
 
-    let categories = ["Animals", "Foods", "Countries", "Movies", "Jobs", "Adjectives"]
+    let categories = [
+        "Animals 🐾",
+        "Foods 🍔",
+        "Countries 🌍",
+        "Movies 🎬",
+        "Jobs 👷‍♀️",
+        "Adjectives ✨",
+        "Sports ⚽️",
+        "Instruments 🎸",
+        "Fruits 🍓",
+        "Colors 🎨",
+        "Cartoons 📺",
+        "Superheroes 🦸‍♂️",
+        "Cities 🏙️",
+        "Plants 🌿",
+        "Hobbies 🎯",
+        "Vehicles 🚗",
+        "Ocean Things 🐠",
+        "Space 🌌",
+        "Games 🎮",
+        "TV Shows 📺"
+    ]
+
     let letters = (65...90).compactMap { UnicodeScalar($0).map { String(Character($0)) } }
 
 
@@ -98,27 +120,98 @@ struct ContentView: View {
             ZStack {
                 theme.backgroundColor.ignoresSafeArea()
 
-                VStack(spacing: 20) {
+                VStack(spacing: 24) {
                     Spacer()
+
                     if isGenerating {
-                        Text("Category: \(currentCategory)")
-                            .font(.title2)
-                            .foregroundColor(theme.textColor)
+                        VStack(spacing: 0) {
+                            let sectionHeight: CGFloat = 100
 
-                        Text(currentLetter)
-                            .font(theme.font)
-                            .foregroundColor(theme.textColor)
-                            .opacity(theme == .cyber ? blinkOpacity : 1.0)
+                            VStack(spacing: 0) {
+                                // CATEGORY
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("CATEGORY")
+                                        .font(.subheadline)
+                                        .foregroundColor(theme.textColor.opacity(0.6))
 
-                        Text("Time: \(timeFormatted)")
-                            .font(.title2)
-                            .foregroundColor(theme.textColor)
-                            .scaleEffect(timerScale)
+                                    Spacer()
 
+                                    HStack {
+                                        Spacer()
+                                        Text(currentCategory)
+                                            .font(.system(size: 40, weight: .bold))
+                                            .foregroundColor(theme.textColor)
+                                            .multilineTextAlignment(.center)
+                                        Spacer()
+                                    }
 
+                                    Spacer()
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity, minHeight: sectionHeight)
+                                Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
+
+                                // LETTER
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("STARTS WITH")
+                                        .font(.subheadline)
+                                        .foregroundColor(theme.textColor.opacity(0.6))
+
+                                    Spacer()
+
+                                    HStack {
+                                        Spacer()
+                                        Text(currentLetter)
+                                            .font(theme.font)
+                                            .foregroundColor(theme.textColor)
+                                            .opacity(theme == .cyber ? blinkOpacity : 1.0)
+                                            .minimumScaleFactor(0.5)
+                                        Spacer()
+                                    }
+
+                                    Spacer()
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity, minHeight: sectionHeight)
+                                Divider().background(theme.textColor.opacity(0.5))
+                                    .padding(.horizontal, 24)
+
+                                // TIME
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("TIME")
+                                        .font(.subheadline)
+                                        .foregroundColor(theme.textColor.opacity(0.6))
+
+                                    Spacer()
+
+                                    HStack {
+                                        Spacer()
+                                        Text(timeFormatted)
+                                            .font(.system(size: 42, weight: .bold))
+                                            .foregroundColor(theme.textColor)
+                                            .scaleEffect(timerScale)
+                                        Spacer()
+                                    }
+
+                                    Spacer()
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity, minHeight: sectionHeight)
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.gray.opacity(theme == .minimalist ? 0.1 : 0.15))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(theme.textColor.opacity(0.15), lineWidth: 1)
+                            )
+                            .padding(.horizontal)
+                        }
                     } else {
                         Text("Tap start to begin")
                             .foregroundColor(theme.textColor)
+                            .padding()
                     }
 
                     Button(action: startGame) {
@@ -134,6 +227,11 @@ struct ContentView: View {
 
                     Spacer()
                 }
+
+
+
+
+
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
@@ -176,6 +274,7 @@ struct ContentView: View {
 
         // Pick new category and animate letter
         currentCategory = categories.randomElement() ?? "Category"
+        cycleCategory()
         animateLetterCycle()
     }
 
@@ -210,6 +309,25 @@ struct ContentView: View {
             animateLetterCycle()
         }
     }
+    
+    func cycleCategory() {
+        let cycleCount = 10
+        let delay = 0.05
+
+        guard animationIndex < cycleCount else {
+            currentCategory = categories.randomElement() ?? "Category"
+            animationIndex = 0
+            return
+        }
+
+        currentCategory = categories.randomElement() ?? "Category"
+        animationIndex += 1
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            cycleCategory()
+        }
+    }
+
 
 
     func popTimerAndStart() {
