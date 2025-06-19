@@ -2,6 +2,8 @@ import SwiftUI
 import ConfettiSwiftUI
 import StoreKit
 import UIKit
+import AVFoundation
+
 
 enum AppTheme: String, CaseIterable, Identifiable {
     case minimalist, cyber, party
@@ -42,7 +44,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var font: Font {
         switch self {
-        case .minimalist: return .system(size: 90, weight: .light, design: .none)
+        case .minimalist: return .custom("Noteworthy-Bold", size: 100)
         case .cyber: return .custom("digital-7", size: 110)
         case .party: return .custom("MarkerFelt-Wide", size: 82)
         }
@@ -63,12 +65,23 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .party: return "Party!  🎉"
         }
     }
+    
+    func styledFont(size: CGFloat) -> Font {
+            switch self {
+            case .minimalist: return .custom("Noteworthy-Bold", size: size)
+            case .cyber: return .custom("digital-7", size: size)
+            case .party: return .custom("MarkerFelt-Wide", size: size)
+            }
+        }
 }
 
 struct ContentView: View {
     @AppStorage("theme") private var themeRaw: String = AppTheme.minimalist.rawValue
     @AppStorage("generateCount") private var generateCount: Int = 0
     @AppStorage("hasRequestedReview") private var hasRequestedReview: Bool = false
+    @AppStorage("soundsEnabled") private var soundsEnabled: Bool = true
+    //private var player: AVAudioPlayer?
+
 
     @State private var currentLetter: String = ""
     @State private var currentCategory: String = ""
@@ -82,6 +95,9 @@ struct ContentView: View {
     @State private var isAnimating = false
     @State private var timerHighlight = false
     @State private var timerScale: CGFloat = 1.0
+    @State private var isTimeUp = false
+    @State private var player: AVAudioPlayer?
+
 
 
 
@@ -102,7 +118,7 @@ struct ContentView: View {
         "Plants 🌿",
         "Hobbies 🎯",
         "Vehicles 🚗",
-        "Ocean Things 🐠",
+        //"Ocean Things 🐠",
         "Space 🌌",
         "Games 🎮",
         "TV Shows 📺"
@@ -118,12 +134,19 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                theme.backgroundColor.ignoresSafeArea()
+                if theme == .minimalist {
+                        LinedPaperBackground()
+                            .ignoresSafeArea()
+                    } else {
+                        theme.backgroundColor.ignoresSafeArea()
+                    }
+                
+                //theme.backgroundColor.ignoresSafeArea()
 
                 VStack(spacing: 24) {
                     Spacer()
 
-                    if isGenerating {
+                    if isGenerating || isTimeUp {
                         VStack(spacing: 0) {
                             let sectionHeight: CGFloat = 100
 
@@ -139,7 +162,7 @@ struct ContentView: View {
                                     HStack {
                                         Spacer()
                                         Text(currentCategory)
-                                            .font(.system(size: 40, weight: .bold))
+                                            .font(theme.styledFont(size: 42))
                                             .foregroundColor(theme.textColor)
                                             .multilineTextAlignment(.center)
                                         Spacer()
@@ -177,7 +200,7 @@ struct ContentView: View {
                                     .padding(.horizontal, 24)
 
                                 // TIME
-                                VStack(alignment: .leading, spacing: 4) {
+                                VStack(alignment: .leading, spacing: 3) {
                                     Text("TIME")
                                         .font(.subheadline)
                                         .foregroundColor(theme.textColor.opacity(0.6))
@@ -186,10 +209,17 @@ struct ContentView: View {
 
                                     HStack {
                                         Spacer()
-                                        Text(timeFormatted)
-                                            .font(.system(size: 42, weight: .bold))
-                                            .foregroundColor(theme.textColor)
-                                            .scaleEffect(timerScale)
+                                        if isTimeUp {
+                                            Text("Time’s up!")
+                                                .font(theme.styledFont(size: 42)) // Or pick a fitting style
+                                                .foregroundColor(theme.textColor)
+                                                .transition(.opacity)
+                                        } else {
+                                            Text(timeFormatted)
+                                                .font(theme.styledFont(size: 55))
+                                                .foregroundColor(theme.textColor)
+                                                .scaleEffect(timerScale)
+                                        }
                                         Spacer()
                                     }
 
@@ -208,6 +238,7 @@ struct ContentView: View {
                             )
                             .padding(.horizontal)
                         }
+                        
                     } else {
                         Text("Tap start to begin")
                             .foregroundColor(theme.textColor)
@@ -245,7 +276,7 @@ struct ContentView: View {
                 }
                 .padding()
                 .sheet(isPresented: $showSettings) {
-                    SettingsView(themeRaw: $themeRaw)
+                    SettingsView(themeRaw: $themeRaw, soundsEnabled: $soundsEnabled)
                         .presentationDetents([.large])
                 }
             }
@@ -261,22 +292,19 @@ struct ContentView: View {
 
     func startGame() {
         triggerTapHaptic()
-
-        // Stop any running timer and reset state
         timer?.invalidate()
         isGenerating = true
         isAnimating = true
-        timeRemaining = 120
+        isTimeUp = false
+        timeRemaining = 5
         animationIndex = 0
-
         generateCount += 1
         maybeRequestReview()
-
-        // Pick new category and animate letter
         currentCategory = categories.randomElement() ?? "Category"
         cycleCategory()
         animateLetterCycle()
     }
+
 
 
     func animateLetterCycle() {
@@ -350,15 +378,21 @@ struct ContentView: View {
 
     func startTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { t in
-            if timeRemaining > 0 {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            if timeRemaining > 1 {
                 timeRemaining -= 1
+            } else if timeRemaining == 1 {
+                timeRemaining -= 1
+                playSound() // Play sound just before hitting zero
             } else {
-                isGenerating = false
                 timer?.invalidate()
+                isTimeUp = true
+                // timeRemaining remains at 0 for display
             }
         }
     }
+
+
 
     func blinkAnimation(completion: @escaping () -> Void) {
         let blinkTimes = 3
@@ -397,10 +431,29 @@ struct ContentView: View {
         case .party: UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         }
     }
+    
+
+    func playSound() {
+        guard soundsEnabled else { return } // Prevent playing if sound is disabled
+
+        if let url = Bundle.main.url(forResource: "ding", withExtension: "mp3") {
+            do {
+                player = try AVAudioPlayer(contentsOf: url)
+                player?.play()
+            } catch {
+                print("Error loading sound: \(error)")
+            }
+        }
+    }
+
+
+
+    
 }
 
 struct SettingsView: View {
     @Binding var themeRaw: String
+    @Binding var soundsEnabled: Bool
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -414,6 +467,10 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.segmented)
                 }
+                
+                Section(header: Text("Sound")) {
+                        Toggle("Enable Sounds", isOn: $soundsEnabled)
+                    }
             }
             .listStyle(.grouped)
             .navigationTitle("Settings")
