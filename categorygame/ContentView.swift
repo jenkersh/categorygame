@@ -52,17 +52,17 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var buttonFont: Font {
         switch self {
-        case .sketch: return .system(size: 24, weight: .light, design: .none)
-        case .cyber: return .system(size: 22, weight: .semibold, design: .default)
-        case .party: return .custom("MarkerFelt-Wide", size: 24)
+        case .sketch: return .system(size: 20, weight: .light, design: .none)
+        case .cyber: return .system(size: 18, weight: .semibold, design: .monospaced)
+        case .party: return .system(size: 18, weight: .heavy, design: .rounded)
         }
     }
 
     var buttonText: String {
         switch self {
-        case .sketch: return "Start"
-        case .cyber: return "RUN"
-        case .party: return "Party!  🎉"
+        case .sketch: return "Start Game"
+        case .cyber: return "EXECUTE GAME"
+        case .party: return "New Game! 🎉"
         }
     }
     
@@ -76,7 +76,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
     
     var cardOverlayOpacity: Double {
         switch self {
-        case .sketch: return 0.5
+        case .sketch: return 0.55
         case .cyber: return 0.1
         case .party: return 0.3
         }
@@ -105,6 +105,14 @@ struct ContentView: View {
     @State private var timerScale: CGFloat = 1.0
     @State private var isTimeUp = false
     @State private var player: AVAudioPlayer?
+    @State private var showWordCountDialog = false
+    @State private var showCongratsDialog = false
+    @State private var submittedScore = 0
+    @State private var wordCountInput = ""
+    @State private var dialogScale: CGFloat = 0.5
+    @State private var isSharePresented = false
+
+
 
 
 
@@ -140,165 +148,184 @@ struct ContentView: View {
     }
     
 
+    // In ContentView.swift
+
     var body: some View {
         NavigationView {
             ZStack {
-                if theme == .sketch {
-                        LinedPaperBackground()
-                            .ignoresSafeArea()
-                    } else {
-                        theme.backgroundColor.ignoresSafeArea()
-                    }
-                
-                
-                
-                //theme.backgroundColor.ignoresSafeArea()
-
+                backgroundView
                 VStack(spacing: 24) {
                     Spacer()
-
-                    if isGenerating || isTimeUp {
-                        VStack(spacing: 0) {
-                            let sectionHeight: CGFloat = 100
-
-                            VStack(spacing: 0) {
-                                // CATEGORY
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("CATEGORY")
-                                        .font(.subheadline)
-                                        .foregroundColor(theme.textColor.opacity(0.6))
-
-                                    Spacer()
-
-                                    HStack {
-                                        Spacer()
-                                        Text(currentCategory)
-                                            .font(theme.styledFont(size: 42))
-                                            .foregroundColor(theme.textColor)
-                                            .multilineTextAlignment(.center)
-                                        Spacer()
-                                    }
-
-                                    Spacer()
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity, minHeight: sectionHeight)
-                                Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
-
-                                // LETTER
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("STARTS WITH")
-                                        .font(.subheadline)
-                                        .foregroundColor(theme.textColor.opacity(0.6))
-
-                                    Spacer()
-
-                                    HStack {
-                                        Spacer()
-                                        Text(currentLetter)
-                                            .font(theme.font)
-                                            .foregroundColor(theme.textColor)
-                                            .opacity(theme == .cyber ? blinkOpacity : 1.0)
-                                            .minimumScaleFactor(0.5)
-                                        Spacer()
-                                    }
-
-                                    Spacer()
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity, minHeight: sectionHeight)
-                                Divider().background(theme.textColor.opacity(0.5))
-                                    .padding(.horizontal, 24)
-
-                                // TIME
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text("TIME")
-                                        .font(.subheadline)
-                                        .foregroundColor(theme.textColor.opacity(0.6))
-
-                                    Spacer()
-
-                                    HStack {
-                                        Spacer()
-                                        if isTimeUp {
-                                            Text("Time’s up!")
-                                                .font(theme.styledFont(size: 42)) // Or pick a fitting style
-                                                .foregroundColor(theme.textColor)
-                                                .transition(.opacity)
-                                        } else {
-                                            Text(timeFormatted)
-                                                .font(theme.styledFont(size: 55))
-                                                .foregroundColor(theme.textColor)
-                                                .scaleEffect(timerScale)
-                                        }
-                                        Spacer()
-                                    }
-
-                                    Spacer()
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity, minHeight: sectionHeight)
-                            }
-                            .background(
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .stroke(theme.textColor.opacity(0.15), lineWidth: 1)
-                                        .fill(Color.white.opacity(theme.cardOverlayOpacity))
-                                }
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(theme.textColor.opacity(0.15), lineWidth: 1)
-//                                    .fill(Color.white.opacity(theme.cardOverlayOpacity))
-                            )
-
-                            .padding(.horizontal)
-                        }
-                        
-                    } else {
-                        Text("Tap start to begin")
-                            .foregroundColor(theme.textColor)
-                            .padding()
-                    }
-
-                    Button(action: startGame) {
-                        Text(theme.buttonText)
-                            .font(theme.buttonFont)
-                            .padding()
-                            .frame(width: 200)
-                            .background(theme.buttonColor)
-                            .foregroundColor(theme.buttonTextColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                    .disabled(isAnimating)
-
+                    gameStateView
+                    startGameButton
                     Spacer()
                 }
-
-
-
-
-
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            showSettings = true
-                        } label: {
-                            Image(systemName: "gear")
-                                .font(.system(size: 24))
-                                .foregroundColor(theme.textColor)
-                        }
-                    }
-                }
                 .padding()
-                .sheet(isPresented: $showSettings) {
-                    SettingsView(themeRaw: $themeRaw, soundsEnabled: $soundsEnabled)
-                        .presentationDetents([.large])
+                if showCongratsDialog {
+                    dialogBackground
+                    CongratsDialogView(score: submittedScore, theme: theme) {
+                        withAnimation {
+                            showCongratsDialog = false
+                            wordCountInput = ""
+                        }
+                    } onShare: {
+                        isSharePresented = true
+                    }
+                    .scaleEffect(dialogScale)
+                    .opacity(showCongratsDialog ? 1 : 0)
+                }
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView(themeRaw: $themeRaw, soundsEnabled: $soundsEnabled)
+                    .presentationDetents([.large])
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showSettings = true
+                } label: {
+                    Image(systemName: "gear")
+                        .font(.system(size: 24))
+                        .foregroundColor(theme.textColor)
                 }
             }
         }
         .confettiCannon(trigger: $confettiCounter, num: 100, colors: [.pink, .yellow, .blue], radius: 400)
+        .overlay(wordCountDialogOverlay)
+        .sheet(isPresented: $isSharePresented) {
+            ShareSheet(activityItems: ["I scored \(submittedScore) in Word Blitz! Can you beat me? https://appstore.link/yourapp"])
+        }
     }
+
+    private var backgroundView: some View {
+        Group {
+            if theme == .sketch {
+                LinedPaperBackground().ignoresSafeArea()
+            } else {
+                theme.backgroundColor.ignoresSafeArea()
+            }
+        }
+    }
+
+    private var gameStateView: some View {
+        Group {
+            if isGenerating || isTimeUp {
+                categoryLetterTimeCard
+            } else {
+                Text("Tap the button to begin")
+                    .foregroundColor(theme.textColor)
+                    .padding()
+            }
+        }
+    }
+
+    private var startGameButton: some View {
+        Button(action: startGame) {
+            Text(theme.buttonText)
+                .font(theme.buttonFont)
+                .padding()
+                .frame(width: 200)
+                .background(theme.buttonColor)
+                .foregroundColor(theme.buttonTextColor)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .disabled(isAnimating)
+    }
+
+    private var wordCountDialogOverlay: some View {
+        Group {
+            if showWordCountDialog {
+                dialogBackground
+                WordCountDialogView(
+                    wordCountInput: $wordCountInput,
+                    theme: theme,
+                    onSkip: {
+                        withAnimation {
+                            showWordCountDialog = false
+                            wordCountInput = ""
+                        }
+                    },
+                    onSubmit: {
+                        if let score = Int(wordCountInput), score > 0 {
+                            submittedScore = score
+                            showWordCountDialog = false
+                            wordCountInput = ""
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                dialogScale = 0.5
+                                showCongratsDialog = true
+                                withAnimation(.interpolatingSpring(stiffness: 180, damping: 8)) {
+                                    dialogScale = 1.0
+                                }
+                            }
+                        }
+                    }
+                )
+                .scaleEffect(dialogScale)
+                .opacity(showWordCountDialog ? 1 : 0)
+            }
+        }
+    }
+
+    private var categoryLetterTimeCard: some View {
+        let sectionHeight: CGFloat = 100
+
+        return VStack(spacing: 0) {
+            labeledSection(title: "CATEGORY", content: currentCategory, font: theme.styledFont(size: 42))
+                .frame(minHeight: sectionHeight)
+            Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
+
+            labeledSection(title: "STARTS WITH", content: currentLetter, font: theme.font, blinking: theme == .cyber)
+                .frame(minHeight: sectionHeight)
+            Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
+
+            labeledSection(title: "TIME", content: isTimeUp ? "Time’s up!" : timeFormatted, font: theme.styledFont(size: isTimeUp ? 42 : 55), scaleEffect: timerScale)
+                .frame(minHeight: sectionHeight)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white.opacity(theme.cardOverlayOpacity))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(theme.textColor.opacity(0.15), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal)
+    }
+
+    private func labeledSection(title: String, content: String, font: Font, blinking: Bool = false, scaleEffect: CGFloat = 1.0) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(theme.textColor.opacity(0.6))
+
+            Spacer()
+
+            HStack {
+                Spacer()
+                Text(content)
+                    .font(font)
+                    .foregroundColor(theme.textColor)
+                    .opacity(blinking ? blinkOpacity : 1.0)
+                    .minimumScaleFactor(0.5)
+                    .scaleEffect(scaleEffect)
+                Spacer()
+            }
+
+            Spacer()
+        }
+        .padding()
+    }
+
+    
+    // Semi-transparent background for dialogs
+       var dialogBackground: some View {
+           Color.black.opacity(0.4)
+               .ignoresSafeArea()
+               .transition(.opacity)
+       }
+       
 
     var timeFormatted: String {
         let minutes = timeRemaining / 60
@@ -376,11 +403,11 @@ struct ContentView: View {
 
     func popTimerAndStart() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {  // 0.3 second delay before starting pop
-            withAnimation(.easeOut(duration: 0.3)) {
+            withAnimation(.easeOut(duration: 0.2)) {
                 timerScale = 1.3
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                withAnimation(.easeIn(duration: 0.3)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(.easeIn(duration: 0.2)) {
                     timerScale = 1.0
                 }
                 startTimer()
@@ -404,6 +431,14 @@ struct ContentView: View {
                 timer?.invalidate()
                 isTimeUp = true
                 // timeRemaining remains at 0 for display
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    dialogScale = 0.5
+                    showWordCountDialog = true
+                    withAnimation(.interpolatingSpring(stiffness: 180, damping: 8)) {
+                        dialogScale = 1.0
+                    }
+                }
+
             }
         }
     }
@@ -507,6 +542,18 @@ struct SettingsView: View {
             })
         }
     }
+}
+
+// UIKit share sheet wrapper
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    let applicationActivities: [UIActivity]? = nil
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 @main

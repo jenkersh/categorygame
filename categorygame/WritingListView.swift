@@ -1,15 +1,13 @@
-//
-//  WritingListView.swift
-//  categorygame
-//
-//  Created by Jen Kersh on 6/21/25.
-//
-
 import SwiftUI
 
 struct WritingListView: View {
     let words = ["Aardvark", "Antelope", "Alligator", "Armadillo", "Ape"]
+
     @State private var revealedWords: [String] = []
+    @State private var typedHeader = ""
+    @State private var headerFinished = false
+
+    var onLetsGo: () -> Void  // New: lets the parent decide what happens on button tap
 
     var body: some View {
         ZStack {
@@ -17,7 +15,15 @@ struct WritingListView: View {
             LinedPaperBackground()
                 .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 16) {  // Increased spacing for clarity
+            VStack(alignment: .leading, spacing: 16) {
+                // Typewriter "For example:"
+                Text(typedHeader)
+                    .font(.custom("Noteworthy-Bold", size: 24))
+                    .padding(.top, 40)
+                    .padding(.bottom, 10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer()
 
                 // Revealed words list
                 ForEach(revealedWords, id: \.self) { word in
@@ -27,24 +33,46 @@ struct WritingListView: View {
                         .transition(.move(edge: .leading).combined(with: .opacity))
                         .animation(.easeInOut, value: revealedWords)
                 }
-            }
-            .padding(40)
-            
-            VStack {
-                    HStack {
-                        Text("For example:")
-                            .font(.custom("Noteworthy-Bold", size: 32))
-                            .foregroundColor(.gray)
-                            .padding(.leading, 40)
-                            .padding(.top, 40)
-                        Spacer()
-                    }
-                    Spacer()
+                .frame(maxWidth: .infinity)
+
+                Spacer()
+                Spacer()
+
+                // "Let's go" button
+                Button(action: onLetsGo) {
+                    Text("Let’s go!")
+                        .font(.custom("Noteworthy-Bold", size: 24))
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
                 }
-            
+                .padding(.bottom, 40)
+            }
+            .padding(.horizontal, 40)
         }
         .onAppear {
-            startWritingAnimation()
+            startHeaderTypewriter()
+        }
+    }
+
+    func startHeaderTypewriter() {
+        let fullText = "For example:"
+        typedHeader = ""
+        headerFinished = false
+
+        for (index, char) in fullText.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.07) {
+                typedHeader.append(char)
+
+                if index == fullText.count - 1 {
+                    headerFinished = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        startWritingAnimation()
+                    }
+                }
+            }
         }
     }
 
@@ -75,12 +103,7 @@ struct LinedPaperBackground: View {
 }
 
 #Preview {
-    WritingListView()
+    WritingListView {
+        print("Let’s go tapped!")
+    }
 }
-
-//  WelcomeScreen.swift
-//  categorygame
-//
-//  Created by Jen Kersh on 6/15/25.
-//
-
