@@ -114,9 +114,6 @@ struct ContentView: View {
 
 
 
-
-
-
     let categories = [
         "Animals 🐾",
         "Foods 🍔",
@@ -160,6 +157,7 @@ struct ContentView: View {
                     startGameButton
                     Spacer()
                 }
+                ignoresSafeArea(.keyboard)
                 .padding()
                 if showCongratsDialog {
                     dialogBackground
@@ -175,11 +173,15 @@ struct ContentView: View {
                     .opacity(showCongratsDialog ? 1 : 0)
                 }
             }
+            .ignoresSafeArea(.keyboard)
             .sheet(isPresented: $showSettings) {
                 SettingsView(themeRaw: $themeRaw, soundsEnabled: $soundsEnabled)
                     .presentationDetents([.large])
             }
+            .ignoresSafeArea(.keyboard)
         }
+        .ignoresSafeArea(.keyboard)
+        
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -192,10 +194,50 @@ struct ContentView: View {
             }
         }
         .confettiCannon(trigger: $confettiCounter, num: 100, colors: [.pink, .yellow, .blue], radius: 400)
-        .overlay(wordCountDialogOverlay)
+        //.overlay(wordCountDialogOverlay)
+        .overlay(
+            Group {
+                if showWordCountDialog {
+                    dialogBackground
+                        .onTapGesture {
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
+
+                    WordCountDialogView(
+                        wordCountInput: $wordCountInput,
+                        theme: theme,
+                        onSkip: {
+                            withAnimation {
+                                showWordCountDialog = false
+                                wordCountInput = ""
+                            }
+                        },
+                        onSubmit: {
+                            if let score = Int(wordCountInput), score > 0 {
+                                submittedScore = score
+                                showWordCountDialog = false
+                                wordCountInput = ""
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                    dialogScale = 0.5
+                                    showCongratsDialog = true
+                                    withAnimation(.interpolatingSpring(stiffness: 180, damping: 8)) {
+                                        dialogScale = 1.0
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    .scaleEffect(dialogScale)
+                    .transition(.scale)
+                }
+                
+            }
+        )
+
         .sheet(isPresented: $isSharePresented) {
             ShareSheet(activityItems: ["I scored \(submittedScore) in Word Blitz! Can you beat me? https://appstore.link/yourapp"])
         }
+        
     }
 
     private var backgroundView: some View {
@@ -282,6 +324,7 @@ struct ContentView: View {
             labeledSection(title: "TIME", content: isTimeUp ? "Time’s up!" : timeFormatted, font: theme.styledFont(size: isTimeUp ? 42 : 55), scaleEffect: timerScale)
                 .frame(minHeight: sectionHeight)
         }
+        .ignoresSafeArea(.keyboard)
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 20)
@@ -315,6 +358,7 @@ struct ContentView: View {
 
             Spacer()
         }
+        .ignoresSafeArea(.keyboard)
         .padding()
     }
 
@@ -323,6 +367,7 @@ struct ContentView: View {
        var dialogBackground: some View {
            Color.black.opacity(0.4)
                .ignoresSafeArea()
+               .ignoresSafeArea(.keyboard)
                .transition(.opacity)
        }
        
@@ -555,6 +600,7 @@ struct ShareSheet: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
+
 
 @main
 struct RandomLetterApp: App {

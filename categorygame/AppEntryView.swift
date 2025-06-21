@@ -7,28 +7,29 @@ struct AppEntryView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            if hasSeenIntro {
-                // User already completed onboarding
-                ContentView()
-            } else if showWritingList {
-                WritingListView {
-                    // Navigate to ContentView and mark intro as complete
-                    hasSeenIntro = true
-                    path.append("content")
-                }
-                .navigationDestination(for: String.self) { value in
-                    if value == "content" {
-                        ContentView()
-                            .navigationBarBackButtonHidden(true)
+            Group {
+                if hasSeenIntro {
+                    ContentView()
+                } else if showWritingList {
+                    WritingListView {
+                        hasSeenIntro = true
+                        path.append("content")
+                    }
+                } else {
+                    WelcomeScreen {
+                        withAnimation {
+                            showWritingList = true
+                        }
                     }
                 }
-            } else {
-                WelcomeScreen {
-                    withAnimation {
-                        showWritingList = true
-                    }
+            }
+            .navigationDestination(for: String.self) { value in
+                if value == "content" {
+                    ContentView()
+                        .navigationBarBackButtonHidden(true)
                 }
             }
         }
     }
 }
+

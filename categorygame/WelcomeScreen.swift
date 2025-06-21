@@ -36,7 +36,7 @@ struct WelcomeScreen: View {
                     .animation(.interpolatingSpring(stiffness: 120, damping: 10), value: showMainTitle)
 
                 // Subtitle
-                Text("Simply list related words that start with a certain letter.")
+                Text("List related words that start with a certain letter. Grab a pen and paper!")
                     .font(.custom("Noteworthy-Bold", size: 20))
                     .foregroundColor(.black)
                     .multilineTextAlignment(.center)
@@ -57,6 +57,7 @@ struct WelcomeScreen: View {
                         .cornerRadius(12)
                         .padding(.horizontal, 40)
                 }
+                .padding(.bottom, 40)
             }
         }
         .onAppear {
