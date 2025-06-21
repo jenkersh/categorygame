@@ -6,13 +6,13 @@ import AVFoundation
 
 
 enum AppTheme: String, CaseIterable, Identifiable {
-    case minimalist, cyber, party
+    case sketch, cyber, party
 
     var id: String { self.rawValue }
 
     var backgroundColor: Color {
         switch self {
-        case .minimalist: return .white
+        case .sketch: return .white
         case .cyber: return Color(red: 0.05, green: 0.05, blue: 0.18)
         case .party: return Color.purple.opacity(0.2)
         }
@@ -20,7 +20,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var textColor: Color {
         switch self {
-        case .minimalist: return .black
+        case .sketch: return .black
         case .cyber: return Color(red: 0.4, green: 1, blue: 0.6)
         case .party: return Color(red: 0.956, green: 0.263, blue: 0.576)
         }
@@ -28,7 +28,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var buttonColor: Color {
         switch self {
-        case .minimalist: return .black
+        case .sketch: return .black
         case .cyber: return Color(red: 0.4, green: 1, blue: 0.6)
         case .party: return Color(red: 0.956, green: 0.263, blue: 0.576)
         }
@@ -36,7 +36,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var buttonTextColor: Color {
         switch self {
-        case .minimalist: return .white
+        case .sketch: return .white
         case .cyber: return .black
         case .party: return .white
         }
@@ -44,7 +44,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var font: Font {
         switch self {
-        case .minimalist: return .custom("Noteworthy-Bold", size: 100)
+        case .sketch: return .custom("Noteworthy-Bold", size: 100)
         case .cyber: return .custom("digital-7", size: 110)
         case .party: return .custom("MarkerFelt-Wide", size: 82)
         }
@@ -52,7 +52,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var buttonFont: Font {
         switch self {
-        case .minimalist: return .system(size: 24, weight: .light, design: .none)
+        case .sketch: return .system(size: 24, weight: .light, design: .none)
         case .cyber: return .system(size: 22, weight: .semibold, design: .default)
         case .party: return .custom("MarkerFelt-Wide", size: 24)
         }
@@ -60,7 +60,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var buttonText: String {
         switch self {
-        case .minimalist: return "Start"
+        case .sketch: return "Start"
         case .cyber: return "RUN"
         case .party: return "Party!  🎉"
         }
@@ -68,15 +68,23 @@ enum AppTheme: String, CaseIterable, Identifiable {
     
     func styledFont(size: CGFloat) -> Font {
             switch self {
-            case .minimalist: return .custom("Noteworthy-Bold", size: size)
+            case .sketch: return .custom("Noteworthy-Bold", size: size)
             case .cyber: return .custom("digital-7", size: size)
             case .party: return .custom("MarkerFelt-Wide", size: size)
             }
         }
+    
+    var cardOverlayOpacity: Double {
+        switch self {
+        case .sketch: return 0.5
+        case .cyber: return 0.1
+        case .party: return 0.3
+        }
+    }
 }
 
 struct ContentView: View {
-    @AppStorage("theme") private var themeRaw: String = AppTheme.minimalist.rawValue
+    @AppStorage("theme") private var themeRaw: String = AppTheme.sketch.rawValue
     @AppStorage("generateCount") private var generateCount: Int = 0
     @AppStorage("hasRequestedReview") private var hasRequestedReview: Bool = false
     @AppStorage("soundsEnabled") private var soundsEnabled: Bool = true
@@ -128,18 +136,21 @@ struct ContentView: View {
 
 
     var theme: AppTheme {
-        AppTheme(rawValue: themeRaw) ?? .minimalist
+        AppTheme(rawValue: themeRaw) ?? .sketch
     }
+    
 
     var body: some View {
         NavigationView {
             ZStack {
-                if theme == .minimalist {
+                if theme == .sketch {
                         LinedPaperBackground()
                             .ignoresSafeArea()
                     } else {
                         theme.backgroundColor.ignoresSafeArea()
                     }
+                
+                
                 
                 //theme.backgroundColor.ignoresSafeArea()
 
@@ -229,13 +240,18 @@ struct ContentView: View {
                                 .frame(maxWidth: .infinity, minHeight: sectionHeight)
                             }
                             .background(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.gray.opacity(theme == .minimalist ? 0.1 : 0.15))
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(theme.textColor.opacity(0.15), lineWidth: 1)
+                                        .fill(Color.white.opacity(theme.cardOverlayOpacity))
+                                }
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
                                     .stroke(theme.textColor.opacity(0.15), lineWidth: 1)
+//                                    .fill(Color.white.opacity(theme.cardOverlayOpacity))
                             )
+
                             .padding(.horizontal)
                         }
                         
@@ -426,7 +442,7 @@ struct ContentView: View {
 
     func triggerTapHaptic() {
         switch theme {
-        case .minimalist: UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        case .sketch: UIImpactFeedbackGenerator(style: .light).impactOccurred()
         case .cyber: UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
         case .party: UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         }
@@ -443,6 +459,18 @@ struct ContentView: View {
             } catch {
                 print("Error loading sound: \(error)")
             }
+        }
+    }
+    
+    struct VisualEffectBlur: UIViewRepresentable {
+        var effect: UIVisualEffect?
+        
+        func makeUIView(context: Context) -> UIVisualEffectView {
+            UIVisualEffectView(effect: effect)
+        }
+
+        func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+            uiView.effect = effect
         }
     }
 
@@ -485,7 +513,7 @@ struct SettingsView: View {
 struct RandomLetterApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            AppEntryView()
         }
     }
 }

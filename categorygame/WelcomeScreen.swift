@@ -1,51 +1,39 @@
 import SwiftUI
 
-struct WritingListView: View {
-    let words = ["Aardvark", "Antelope", "Alligator", "Armadillo", "Ape"]
-    @State private var revealedWords: [String] = []
+struct WelcomeScreen: View {
+    var onContinue: () -> Void
 
     var body: some View {
         ZStack {
-            // Lined paper background
             LinedPaperBackground()
                 .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(revealedWords, id: \.self) { word in
-                    Text(word)
-                        .font(.custom("Noteworthy-Bold", size: 32))
-                        .foregroundColor(.black)
-                        .transition(.move(edge: .leading).combined(with: .opacity))
-                        .animation(.easeInOut, value: revealedWords)
-                }
-            }
-            .padding(40)
-        }
-        .onAppear {
-            startWritingAnimation()
-        }
-    }
+            VStack(spacing: 32) {
+                Spacer()
 
-    func startWritingAnimation() {
-        for (index, word) in words.enumerated() {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 1.2) {
-                withAnimation {
-                    revealedWords.append(word)
-                }
-            }
-        }
-    }
-}
+                Text("Welcome to Word Blitz!")
+                    .font(.custom("Noteworthy-Bold", size: 40))
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
 
-struct LinedPaperBackground: View {
-    var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 40) {
-                ForEach(0..<Int(geometry.size.height / 40), id: \.self) { _ in
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 1)
-                        .padding(.horizontal, 20)
+                Text("Simply list related words that start with a certain letter.")
+                    .font(.custom("Noteworthy-Bold", size: 20))
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+
+                Spacer()
+
+                Button(action: onContinue) {
+                    Text("Continue")
+                        .font(.custom("Noteworthy-Bold", size: 24))
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .padding(.horizontal, 40)
                 }
             }
         }
@@ -53,8 +41,9 @@ struct LinedPaperBackground: View {
 }
 
 #Preview {
-    WritingListView()
+    WelcomeScreen(onContinue: {})
 }
+
 
 //  WelcomeScreen.swift
 //  categorygame
