@@ -153,11 +153,11 @@ struct ContentView: View {
                 backgroundView
                 ScrollView {
                     VStack(spacing: 24) {
-                        Spacer()
-                        Spacer()
+                        Spacer(minLength: 5)
                         gameStateView
+                        //Spacer().frame(height: 5)
                         startGameButton
-                        Spacer()
+                        Spacer(minLength: 20)
                     }
                     .ignoresSafeArea(.keyboard)
                     .padding()
@@ -197,6 +197,7 @@ struct ContentView: View {
                 }
             }
         }
+        
         .confettiCannon(trigger: $confettiCounter, num: 100, colors: [.pink, .yellow, .blue], radius: 400)
         //.overlay(wordCountDialogOverlay)
         .overlay(
@@ -260,6 +261,7 @@ struct ContentView: View {
         Group {
             if isGenerating || isTimeUp {
                 categoryLetterTimeCard
+                Spacer().frame(height: 0.5)
             } else {
                 Text("Tap the button to begin")
                     .foregroundColor(theme.textColor)
@@ -316,36 +318,34 @@ struct ContentView: View {
     }
 
     private var categoryLetterTimeCard: some View {
-        let sectionHeight: CGFloat = 100
+        let screenHeight = UIScreen.main.bounds.height
+        let totalHeight = max(screenHeight * 0.6, 400)
+        let sectionHeight = totalHeight / 3
 
         return VStack(spacing: 0) {
             labeledSection(title: "CATEGORY", content: currentCategory, font: theme.styledFont(size: 42))
-                .ignoresSafeArea(.keyboard)
-                .frame(minHeight: sectionHeight)
+                .frame(height: sectionHeight)
+
             Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
 
             labeledSection(title: "STARTS WITH", content: currentLetter, font: theme.styledFont(size: 70), blinking: theme == .cyber)
-                .ignoresSafeArea(.keyboard)
-                .frame(minHeight: sectionHeight)
-            Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
+                .frame(height: sectionHeight)
 
-            let timerContent = isTimeUp ? "Time’s up!" : timeFormatted
+            Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
 
             labeledSection(
                 title: "TIME",
-                content: timerContent,
+                content: isTimeUp ? "Time’s up!" : timeFormatted,
                 font: theme.styledFont(size: isTimeUp ? 42 : 55),
                 scaleEffect: timerScale
             )
-            .frame(height: sectionHeight + 30)
+            .frame(height: sectionHeight)
             .background(
-                Text("Time’s up!") // The longest string
+                Text("Time’s up!") // invisible placeholder to lock height
                     .font(theme.styledFont(size: 55))
                     .hidden()
             )
-
         }
-        .ignoresSafeArea(.keyboard)
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 20)
@@ -356,7 +356,12 @@ struct ContentView: View {
                 )
         )
         .padding(.horizontal)
+        .frame(height: totalHeight)
     }
+
+
+
+
 
     private func labeledSection(title: String, content: String, font: Font, blinking: Bool = false, scaleEffect: CGFloat = 1.0) -> some View {
         VStack(alignment: .leading, spacing: 4) {
