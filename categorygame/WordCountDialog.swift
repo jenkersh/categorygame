@@ -46,7 +46,7 @@ struct WordCountDialogView: View {
                     .foregroundColor(.blue)
             }
             .padding(.top, 8)
-            ignoresSafeArea(.keyboard)
+            .ignoresSafeArea(.keyboard)
         }
         .padding(30)
         .background(Color.white)

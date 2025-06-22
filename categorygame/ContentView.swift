@@ -151,14 +151,18 @@ struct ContentView: View {
         NavigationView {
             ZStack {
                 backgroundView
-                VStack(spacing: 24) {
-                    Spacer()
-                    gameStateView
-                    startGameButton
-                    Spacer()
+                ScrollView {
+                    VStack(spacing: 24) {
+                        Spacer()
+                        Spacer()
+                        gameStateView
+                        startGameButton
+                        Spacer()
+                    }
+                    .ignoresSafeArea(.keyboard)
+                    .padding()
                 }
-                ignoresSafeArea(.keyboard)
-                .padding()
+                .scrollDisabled(true)
                 if showCongratsDialog {
                     dialogBackground
                     CongratsDialogView(score: submittedScore, theme: theme) {
@@ -227,6 +231,7 @@ struct ContentView: View {
                             }
                         }
                     )
+                    .ignoresSafeArea(.keyboard)
                     .scaleEffect(dialogScale)
                     .transition(.scale)
                 }
@@ -239,6 +244,7 @@ struct ContentView: View {
         }
         
     }
+        
 
     private var backgroundView: some View {
         Group {
@@ -314,15 +320,30 @@ struct ContentView: View {
 
         return VStack(spacing: 0) {
             labeledSection(title: "CATEGORY", content: currentCategory, font: theme.styledFont(size: 42))
+                .ignoresSafeArea(.keyboard)
                 .frame(minHeight: sectionHeight)
             Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
 
-            labeledSection(title: "STARTS WITH", content: currentLetter, font: theme.font, blinking: theme == .cyber)
+            labeledSection(title: "STARTS WITH", content: currentLetter, font: theme.styledFont(size: 70), blinking: theme == .cyber)
+                .ignoresSafeArea(.keyboard)
                 .frame(minHeight: sectionHeight)
             Divider().background(theme.textColor.opacity(0.5)).padding(.horizontal, 24)
 
-            labeledSection(title: "TIME", content: isTimeUp ? "Time’s up!" : timeFormatted, font: theme.styledFont(size: isTimeUp ? 42 : 55), scaleEffect: timerScale)
-                .frame(minHeight: sectionHeight)
+            let timerContent = isTimeUp ? "Time’s up!" : timeFormatted
+
+            labeledSection(
+                title: "TIME",
+                content: timerContent,
+                font: theme.styledFont(size: isTimeUp ? 42 : 55),
+                scaleEffect: timerScale
+            )
+            .frame(height: sectionHeight + 30)
+            .background(
+                Text("Time’s up!") // The longest string
+                    .font(theme.styledFont(size: 55))
+                    .hidden()
+            )
+
         }
         .ignoresSafeArea(.keyboard)
         .padding()
