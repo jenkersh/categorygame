@@ -205,6 +205,7 @@ struct ContentView: View {
                 if showWordCountDialog {
                     dialogBackground
                         .onTapGesture {
+                            triggerTapHaptic()
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
 
@@ -212,12 +213,14 @@ struct ContentView: View {
                         wordCountInput: $wordCountInput,
                         theme: theme,
                         onSkip: {
+                            triggerTapHaptic()
                             withAnimation {
                                 showWordCountDialog = false
                                 wordCountInput = ""
                             }
                         },
                         onSubmit: {
+                            triggerTapHaptic()
                             if let score = Int(wordCountInput), score > 0 {
                                 submittedScore = score
                                 showWordCountDialog = false
@@ -291,12 +294,14 @@ struct ContentView: View {
                     wordCountInput: $wordCountInput,
                     theme: theme,
                     onSkip: {
+                        triggerTapHaptic()
                         withAnimation {
                             showWordCountDialog = false
                             wordCountInput = ""
                         }
                     },
                     onSubmit: {
+                        triggerTapHaptic()
                         if let score = Int(wordCountInput), score > 0 {
                             submittedScore = score
                             showWordCountDialog = false
@@ -539,7 +544,7 @@ struct ContentView: View {
     }
 
     func maybeRequestReview() {
-        guard generateCount >= 10, !hasRequestedReview else { return }
+        guard generateCount >= 2, !hasRequestedReview else { return }
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             SKStoreReviewController.requestReview(in: windowScene)
             hasRequestedReview = true
@@ -600,10 +605,16 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                    .onChange(of: themeRaw) { _ in
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred() // ✅ Theme change haptic
+                        }
                 }
                 
                 Section(header: Text("Sound")) {
                         Toggle("Enable Sounds", isOn: $soundsEnabled)
+                        .onChange(of: soundsEnabled) { _ in
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred() // ✅ Toggle haptic
+                            }
                     }
             }
             .listStyle(.grouped)
