@@ -244,7 +244,7 @@ struct ContentView: View {
         )
 
         .sheet(isPresented: $isSharePresented) {
-            ShareSheet(activityItems: ["I scored \(submittedScore) in Word Blitz! Can you beat me? https://appstore.link/yourapp"])
+            ShareSheet(activityItems: ["I scored \(submittedScore) in Word Blitz! Can you beat me? https://apps.apple.com/app/id6747693370"])
         }
         
     }
@@ -415,7 +415,7 @@ struct ContentView: View {
         isGenerating = true
         isAnimating = true
         isTimeUp = false
-        timeRemaining = 5
+        timeRemaining = 120
         animationIndex = 0
         generateCount += 1
         maybeRequestReview()
